@@ -7,15 +7,28 @@ import  com.automatization.tests.Config;
 import static org.hamcrest.Matchers.*;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
-import  com.automatization.tests.data.TestData;
 import com.automatization.tests.api.Endpoints;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 public class SwapiTest {
     
+
+    public final class TestData {
+        private TestData() {}
+
+        public static final int EXISTING_PERSON_ID = 1;
+        public static final int NON_EXISTENT_PERSON_ID = 999999;
+        public static final int EXISTING_FILM_ID = 1;
+        public static final int EXISTING_EPISODE_ID = 4;
+        public static final int FIRST_PAGE = 1;
+        public static final String SEARCH_QUERY = "luke";
+        public static final String NON_NUMERIC_ID = "not-a-number";
+        public static final String EXISTING_EPISODE_STRING = "A New Hope";
+    }
 
     @BeforeAll 
     static void setup(){
@@ -43,7 +56,9 @@ public class SwapiTest {
             .get(Endpoints.FILMS_BY_ID)
         .then()
             .statusCode(200)
-            .body("episode_id", not(emptyOrNullString()))
+            .body("episode_id", equalTo(TestData.EXISTING_EPISODE_ID))
+            .body("title", not(emptyOrNullString()))
+            .body("title", equalTo(TestData.EXISTING_EPISODE_STRING))
             .body("director", containsString("George Lucas"))
             .body("release_date",  matchesPattern("\\d{4}-\\d{2}-\\d{2}"));
     }

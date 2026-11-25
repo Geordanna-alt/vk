@@ -3,102 +3,117 @@ package pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import com.microsoft.playwright.options.WaitUntilState;
+import core.Loadable;
+import data.TestData;
+import elements.Element;
 
-/**
- * Page Object главной страницы стенда https://sauce-demo.myshopify.com/
- */
-public class HomePage {
-    private static final String URL = "https://sauce-demo.myshopify.com/";
+/** Объект главной страницы https://sauce-demo.myshopify.com */
+public final class HomePage extends Loadable<HomePage> {
 
-    private final Page page;
+  private final Element searchInput;
+  private final Element searchButton;
+  private final Element cartLink;
 
-    public HomePage(Page page) {
-        this.page = page;
-    }
+  /** Главная страница */
+  public HomePage(Page page) {
+    super(page, TestData.SHOP_URL, DEFAULT_TIMEOUT);
+    this.searchInput = element(page.getByPlaceholder("Search"), "Search input");
+    this.searchButton =
+        element(
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Submit")),
+            "Search button");
+    this.cartLink =
+        element(
+            page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("My Cart"))
+                .filter(new Locator.FilterOptions().setVisible(true)),
+            "Cart link");
+  }
 
-    public void navigate() {
-        page.navigate(
-                URL,
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-    }
+  /** Проверяет загрузку страницы */
+  @Override
+  protected boolean isLoaded() {
+    return page.url().startsWith(TestData.SHOP_URL) && searchInput.isVisible();
+  }
 
-    /** Поле поиска в шапке */
-    public Locator searchInput() {
-        return page.getByPlaceholder("Search");
-    }
+  /** Элемент поля поиска */
+  public Element searchInputElement() {
+    return searchInput;
+  }
 
-    /** Кнопка отправки поиска */
-    public Locator searchButton() {
-        return page.getByRole(
-                AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Submit"));
-    }
+  /** Элемент кнопки поиска */
+  public Element searchButtonElement() {
+    return searchButton;
+  }
 
-    /** Ссылка «Log In» в шапке */
-    public Locator loginLink() {
-        return page.getByRole(
-                AriaRole.LINK, new Page.GetByRoleOptions().setName("Log In"));
-    }
+  /** Элемент ссылки на корзину */
+  public Element cartLinkElement() {
+    return cartLink;
+  }
 
-    /**
-     * Ссылка на корзину
-     */
-    public Locator cartLink() {
-        return page.getByRole(
-                        AriaRole.LINK, new Page.GetByRoleOptions().setName("My Cart"))
-                .filter(new Locator.FilterOptions().setVisible(true));
-    }
+  /** Поле поиска */
+  public Locator searchInput() {
+    return searchInput.locator();
+  }
 
-    /** Карточка товара по названию*/
-    public Locator productCard(String productName) {
-        return page.getByRole(
-                AriaRole.LINK, new Page.GetByRoleOptions().setName(productName));
-    }
+  /** Кнопка поиска */
+  public Locator searchButton() {
+    return searchButton.locator();
+  }
 
-    /**
-     * Все карточки товаров
-     */
-    public Locator productCards() {
-        return page.locator("a[id^='product-']");
-    }
+  /** Ссылка входа в шапке */
+  public Locator loginLink() {
+    return page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Log In"));
+  }
 
-    /** Названия товаров на главной */
-    public Locator productNames() {
-        return productCards()
-                .getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setLevel(3));
-    }
+  /** Ссылка на корзину */
+  public Locator cartLink() {
+    return cartLink.locator();
+  }
 
-    /** Цены товаров на главной */
-    public Locator productPrices() {
-        return productCards()
-                .getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setLevel(4));
-    }
+  /** Карточка товара по названию */
+  public Locator productCard(String productName) {
+    return page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(productName));
+  }
 
-    /** Ссылка в меню или шапке по доступному имени */
-    public Locator navLink(String name) {
-        return page.getByRole(
-                AriaRole.LINK, new Page.GetByRoleOptions().setName(name)).first();
-    }
+  /** Все карточки товаров */
+  public Locator productCards() {
+    return page.locator("a[id^='product-']");
+  }
 
-    /** Ссылка «Check Out» в шапке */
-    public Locator checkoutLink() {
-        return page.getByRole(
-                AriaRole.LINK, new Page.GetByRoleOptions().setName("Check Out"));
-    }
+  /** Названия товаров на главной */
+  public Locator productNames() {
+    return productCards().getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setLevel(3));
+  }
 
-    /** Футер страницы */
-    public Locator footer() {
-        return page.getByRole(AriaRole.CONTENTINFO);
-    }
+  /** Цены товаров на главной */
+  public Locator productPrices() {
+    return productCards().getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setLevel(4));
+  }
 
-    /** Сообщение пустой корзины в выдвижной панели */
-    public Locator emptyCartMessage() {
-        return page.getByText("Your cart is empty");
-    }
+  /** Ссылка в меню или шапке по доступному имени */
+  public Locator navLink(String name) {
+    return page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName(name)).first();
+  }
 
-    /** Ввести поисковый запрос и отправить форму*/
-    public void search(String query) {
-        searchInput().fill(query);
-        searchInput().press("Enter");
-    }
+  /** Ссылка оформления заказа в шапке */
+  public Locator checkoutLink() {
+    return page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Check Out"));
+  }
+
+  /** Подвал страницы */
+  public Locator footer() {
+    return page.getByRole(AriaRole.CONTENTINFO);
+  }
+
+  /** Сообщение пустой корзины в выдвижной панели */
+  public Locator emptyCartMessage() {
+    return page.getByText("Your cart is empty");
+  }
+
+  /** Ввести поисковый запрос и отправить форму */
+  public HomePage search(String query) {
+    searchInput.fill(query);
+    searchInput.press("Enter");
+    return self();
+  }
 }

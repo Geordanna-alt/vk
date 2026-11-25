@@ -3,53 +3,91 @@ package pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import com.microsoft.playwright.options.WaitUntilState;
+import core.Loadable;
+import data.Registration;
+import data.TestData;
+import elements.Element;
 
-/** Page Object страницы регистрации магазина sauce-demo.myshopify.com. */
-public class SignUpPage {
-    private static final String URL = "https://sauce-demo.myshopify.com/account/register";
+/** Объект страницы регистрации магазина sauce-demo.myshopify.com */
+public final class SignUpPage extends Loadable<SignUpPage> {
 
-    private final Page page;
+  private static final String URL = TestData.SHOP_URL + "account/register";
 
-    public SignUpPage(Page page) {
-        this.page = page;
-    }
+  private final Element heading;
+  private final Element firstNameInput;
+  private final Element lastNameInput;
+  private final Element emailInput;
+  private final Element passwordInput;
+  private final Element createButton;
 
-    public void navigate() {
-        page.navigate(
-                URL,
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-    }
+  /** Страница регистрации */
+  public SignUpPage(Page page) {
+    super(page, URL, DEFAULT_TIMEOUT);
+    this.heading =
+        element(
+            page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Create Account")),
+            "Create Account heading");
+    this.firstNameInput =
+        element(page.locator("#create_customer input[name='customer[first_name]']"), "First name");
+    this.lastNameInput =
+        element(page.locator("#create_customer input[name='customer[last_name]']"), "Last name");
+    this.emailInput =
+        element(page.locator("#create_customer input[name='customer[email]']"), "Email");
+    this.passwordInput =
+        element(page.locator("#create_customer input[name='customer[password]']"), "Password");
+    this.createButton =
+        element(
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create")),
+            "Create button");
+  }
 
-    public Locator firstNameInput() {
-        return page.locator("#create_customer input[name='customer[first_name]']");
-    }
+  /** Проверяет загрузку страницы */
+  @Override
+  protected boolean isLoaded() {
+    return page.url().startsWith(URL) && firstNameInput.isVisible();
+  }
 
-    public Locator lastNameInput() {
-        return page.locator("#create_customer input[name='customer[last_name]']");
-    }
+  /** Заголовок */
+  public Locator heading() {
+    return heading.locator();
+  }
 
-    public Locator emailInput() {
-        return page.locator("#create_customer input[name='customer[email]']");
-    }
+  /** Поле имени */
+  public Locator firstNameInput() {
+    return firstNameInput.locator();
+  }
 
-    public Locator passwordInput() {
-        return page.locator("#create_customer input[name='customer[password]']");
-    }
+  /** Поле фамилии */
+  public Locator lastNameInput() {
+    return lastNameInput.locator();
+  }
 
-    public Locator createButton() {
-        return page.getByRole(
-                AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Create"));
-    }
+  /** Поле почты */
+  public Locator emailInput() {
+    return emailInput.locator();
+  }
 
-    public void fillForm(String firstName, String lastName, String email, String password) {
-        firstNameInput().fill(firstName);
-        lastNameInput().fill(lastName);
-        emailInput().fill(email);
-        passwordInput().fill(password);
-    }
+  /** Поле пароля */
+  public Locator passwordInput() {
+    return passwordInput.locator();
+  }
 
-    public void submit() {
-        createButton().click();
-    }
+  /** Кнопка создания */
+  public Locator createButton() {
+    return createButton.locator();
+  }
+
+  /** Заполняет форму */
+  public SignUpPage fillForm(Registration registration) {
+    firstNameInput.fill(registration.firstName());
+    lastNameInput.fill(registration.lastName());
+    emailInput.fill(registration.email());
+    passwordInput.fill(registration.password());
+    return self();
+  }
+
+  /** Отправляет форму */
+  public void submit() {
+    createButton.click();
+  }
 }

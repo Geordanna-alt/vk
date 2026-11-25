@@ -2,78 +2,116 @@ package pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import core.BasePage;
+import data.Customer;
+import elements.Element;
 
-/** Page Object оформления заказа */
-public class CheckoutPage {
-    private final Page page;
+/** Объект оформления заказа */
+public final class CheckoutPage extends BasePage<CheckoutPage> {
 
-    public CheckoutPage(Page page) {
-        this.page = page;
-    }
+  private final Element firstNameInput;
+  private final Element lastNameInput;
+  private final Element postalCodeInput;
+  private final Element continueButton;
+  private final Element finishButton;
+  private final Element cancelButton;
 
-    public Locator title() {
-        return page.getByTestId("title");
-    }
+  /** Страница оформления заказа */
+  public CheckoutPage(Page page) {
+    super(page);
+    this.firstNameInput = element(page.getByTestId("firstName"), "First name");
+    this.lastNameInput = element(page.getByTestId("lastName"), "Last name");
+    this.postalCodeInput = element(page.getByTestId("postalCode"), "Postal code");
+    this.continueButton = element(page.getByTestId("continue"), "Continue");
+    this.finishButton = element(page.getByTestId("finish"), "Finish");
+    this.cancelButton = element(page.getByTestId("cancel"), "Cancel");
+  }
 
-    public Locator firstNameInput() {
-        return page.getByTestId("firstName");
-    }
+  /** Заголовок */
+  public Locator title() {
+    return page.getByTestId("title");
+  }
 
-    public Locator lastNameInput() {
-        return page.getByTestId("lastName");
-    }
+  /** Поле имени */
+  public Locator firstNameInput() {
+    return firstNameInput.locator();
+  }
 
-    public Locator postalCodeInput() {
-        return page.getByTestId("postalCode");
-    }
+  /** Поле фамилии */
+  public Locator lastNameInput() {
+    return lastNameInput.locator();
+  }
 
-    public Locator continueButton() {
-        return page.getByTestId("continue");
-    }
+  /** Поле индекса */
+  public Locator postalCodeInput() {
+    return postalCodeInput.locator();
+  }
 
-    public Locator cancelButton() {
-        return page.getByTestId("cancel");
-    }
+  /** Кнопка продолжения */
+  public Locator continueButton() {
+    return continueButton.locator();
+  }
 
-    public Locator errorMessage() {
-        return page.getByTestId("error");
-    }
+  /** Кнопка отмены */
+  public Locator cancelButton() {
+    return cancelButton.locator();
+  }
 
-    public Locator finishButton() {
-        return page.getByTestId("finish");
-    }
+  /** Сообщение об ошибке */
+  public Locator errorMessage() {
+    return page.getByTestId("error");
+  }
 
-    public Locator total() {
-        return page.getByTestId("total-label");
-    }
+  /** Кнопка завершения */
+  public Locator finishButton() {
+    return finishButton.locator();
+  }
 
-    public Locator completeHeader() {
-        return page.getByTestId("complete-header");
-    }
+  /** Итого */
+  public Locator total() {
+    return page.getByTestId("total-label");
+  }
 
-    public Locator completeText() {
-        return page.getByTestId("complete-text");
-    }
+  /** Заголовок завершения */
+  public Locator completeHeader() {
+    return page.getByTestId("complete-header");
+  }
 
-    public Locator backHomeButton() {
-        return page.getByTestId("back-to-products");
-    }
+  /** Текст завершения */
+  public Locator completeText() {
+    return page.getByTestId("complete-text");
+  }
 
-    public void fillInfo(String firstName, String lastName, String postalCode) {
-        firstNameInput().fill(firstName);
-        lastNameInput().fill(lastName);
-        postalCodeInput().fill(postalCode);
-    }
+  /** Кнопка возврата к товарам */
+  public Locator backHomeButton() {
+    return page.getByTestId("back-to-products");
+  }
 
-    public void continueToOverview() {
-        continueButton().click();
-    }
+  /** Заполняет данные заказа */
+  public CheckoutPage fillInfo(Customer customer) {
+    firstNameInput.fill(customer.firstName());
+    lastNameInput.fill(customer.lastName());
+    postalCodeInput.fill(customer.postalCode());
+    return self();
+  }
 
-    public void finish() {
-        finishButton().click();
-    }
+  /** Без ожидания адреса: при ошибке валидации остаёмся на той же странице */
+  public CheckoutPage continueToOverview() {
+    continueButton.click();
+    return self();
+  }
 
-    public void cancel() {
-        cancelButton().click();
-    }
+  /** Завершает заказ */
+  public CheckoutPage finish() {
+    finishButton.click();
+    waitForUrl("**/checkout-complete.html");
+    return self();
+  }
+
+  /** Отменяет оформление */
+  public CartPage cancel() {
+    cancelButton.click();
+    waitForUrl("**/cart.html");
+    return Pages.cart(page);
+  }
 }

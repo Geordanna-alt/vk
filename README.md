@@ -75,7 +75,33 @@ mvn test -Dgroups=inventory
 mvn test -Dgroups=cart
 mvn test -Dgroups=checkout
 mvn test -Dgroups=accessibility
+mvn test -Dgroups=products
+mvn test -Dgroups=search
+mvn test -Dgroups=navigation
+mvn test -Dgroups=footer
+mvn test -Dgroups=visibility
+mvn test -Dgroups=signup
 ```
+
+## Паттерны проектирования
+
+| Паттерн | Где используется |
+| --- | --- |
+| Page Object | `pages/*Page.java` |
+| Page Element / Decorator / Wrapper | `elements/Element.java`, `elements/PageElement.java`, `elements/HighlightedElementDecorator.java` |
+| Loadable Component | `core/Loadable.java`, `open()` в `LoginPage`, `HomePage`, `SignUpPage` |
+| Chain of Invocations | `Pages.home(page).open().search(...)`, `Pages.login(page).open().login(credentials)` |
+| Value Object | `data/Credentials.java`, `data/Customer.java`, `data/Registration.java` |
+| Data Provider | `data/TestData.java` + `@MethodSource` в `LoginPageTest`, `HomePageSearchTest` |
+| Factory | `pages/Pages.java` |
+| Data Registry | `data/TestData.java` (URL, пользователи, ссылки меню) |
+
+Пример цепочки из `LoginPageTest`:
+
+```java
+InventoryPage inventory = Pages.login(page).open().login(TestData.STANDARD_USER);
+```
+
 ## Отчёты и проверки качества кода
 
 - Результаты тестов: `target/surefire-reports/`

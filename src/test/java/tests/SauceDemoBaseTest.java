@@ -1,24 +1,22 @@
 package tests;
 
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.WaitUntilState;
+import data.TestData;
 import org.junit.jupiter.api.BeforeEach;
+import pages.CartPage;
 import pages.InventoryPage;
-import pages.LoginPage;
+import pages.Pages;
 
-/** База для тестов, которым нужен уже выполненный вход */
+/** База для тестов, которым нужен уже выполненный вход и пустая корзина */
 public abstract class SauceDemoBaseTest extends BaseTest {
 
-    protected InventoryPage inventoryPage;
+  protected InventoryPage inventoryPage;
 
-    @BeforeEach
-    void loginAsStandardUser() {
-        LoginPage loginPage = new LoginPage(page);
-        loginPage.navigate();
-        inventoryPage = loginPage.login("standard_user", "secret_sauce");
+  @BeforeEach
+  void loginAsStandardUser() {
+    inventoryPage = Pages.login(page).open().login(TestData.STANDARD_USER);
 
-        page.waitForURL(
-                "**/inventory.html",
-                new Page.WaitForURLOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-    }
+    // Состояние корзины сохраняется на стенде между прогонами — очищаем его
+    CartPage cartPage = inventoryPage.openCart().removeAll();
+    inventoryPage = cartPage.continueShopping();
+  }
 }
